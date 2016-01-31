@@ -10,7 +10,7 @@ LIBS = -lutils -lnewimage -lmiscmaths -lprob -lnewmat -lfslio -lniftiio -lznz -l
 XFILES = fabber
 
 # Forward models
-OBJS =  fwdmodel_dwi.o
+OBJS =  fwdmodel_dwi.o fwdmodel_dwi_IVIM.o
 
 # For debugging:
 OPTFLAGS = -ggdb
