@@ -6,51 +6,50 @@
 
 /*  CCOPYRIGHT */
 
-#include "fabbercore/fwdmodel.h"
-#include "fabbercore/inference.h"
+#include "fabber_core/fwdmodel.h"
+#include "fabber_core/rundata.h"
+
+#include <newmat.h>
+
 #include <string>
-using namespace std;
+#include <vector>
 
-class DWIFwdModel : public FwdModel {
+class DWIFwdModel : public FwdModel
+{
 public:
-  static FwdModel* NewInstance();
+    static FwdModel *NewInstance();
 
-  // Virtual function overrides
-  virtual void Initialize(ArgsType& args);
-  virtual void Evaluate(const ColumnVector& params,
-                  ColumnVector& result) const;
-  virtual vector<string> GetUsage() const;
-  virtual string ModelVersion() const;
+    void GetOptions(std::vector<OptionSpec> &opts) const;
+    std::string GetDescription() const;
+    virtual std::vector<std::string> GetUsage() const;
+    virtual std::string ModelVersion() const;
 
-  virtual void DumpParameters(const ColumnVector& vec,
-                                const string& indents = "") const;
+    // Virtual function overrides
+    virtual void Initialize(ArgsType &args);
+    virtual void Evaluate(const NEWMAT::ColumnVector &params,
+        NEWMAT::ColumnVector &result) const;
 
-  virtual void NameParams(vector<string>& names) const;
-  virtual int NumParams() const
-  { return 2; }
+    virtual void NameParams(std::vector<std::string> &names) const;
+    virtual int NumParams() const
+    {
+        return 2;
+    }
 
-  virtual ~DWIFwdModel() { return; }
-
-  virtual void HardcodedInitialDists(MVNDist& prior, MVNDist& posterior) const;
+    virtual void HardcodedInitialDists(MVNDist &prior, MVNDist &posterior) const;
 
 protected:
+    // Constants
 
+    // Lookup the starting indices of the parameters
+    int ADC_index() const { return 1; }
+    int sig0_index() const { return 2; }
+    //for ARD
+    std::vector<int> ard_index;
 
-// Constants
+    bool doard;
+    NEWMAT::ColumnVector bvals;
 
-  // Lookup the starting indices of the parameters
-  int ADC_index() const {return 1;}
-
-  int sig0_index() const { return 2; }
-
-  //for ARD
-  vector<int> ard_index;
-
-  bool doard;
-  ColumnVector bvals;
-
-  private:
-  /** Auto-register with forward model factory. */
-  static FactoryRegistration<FwdModelFactory, DWIFwdModel> registration;
-
+private:
+    /** Auto-register with forward model factory. */
+    static FactoryRegistration<FwdModelFactory, DWIFwdModel> registration;
 };
