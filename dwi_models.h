@@ -9,8 +9,6 @@
 
 #include "fabber_core/fwdmodel.h"
 
-using namespace MISCMATHS;
-
 #ifdef _WIN32
 #ifdef fabber_dwi_EXPORTS
 #define DLLAPI __declspec(dllexport)
