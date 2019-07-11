@@ -1,0 +1,4 @@
+*.o
+*.a
+fabber_dwi
+depend.mk
