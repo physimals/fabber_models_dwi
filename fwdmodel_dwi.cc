@@ -12,9 +12,14 @@
 #include <iostream>
 #include "armawrap/newmat.h"
 #include <stdexcept>
-using namespace NEWIMAGE;
+
 #include "fabber_core/easylog.h"
 #include "miscmaths/miscprob.h"
+
+using namespace std;
+using namespace NEWMAT;
+using namespace NEWIMAGE;
+
 
 FactoryRegistration<FwdModelFactory, DWIFwdModel>
     DWIFwdModel::registration("dwi");
@@ -130,7 +135,7 @@ void DWIFwdModel::Evaluate(const ColumnVector &params, ColumnVector &result) con
     ColumnVector sig(ntpts);
     sig = 0.0;
 
-    sig = sig0 * exp(-ADC * 1e-3 * bvals); // the 1 compartment model.
+    sig = sig0 * MISCMATHS::exp(-ADC * 1e-3 * bvals); // the 1 compartment model.
     //cout<<sig<<endl;
     result = sig;
 
@@ -159,7 +164,7 @@ void DWIFwdModel::Initialize(ArgsType &args)
     string bvalfile = args.Read("bvals");
     if (bvalfile != "none")
     {
-        bvals = read_ascii_matrix(bvalfile);
+        bvals = MISCMATHS::read_ascii_matrix(bvalfile);
     }
     doard = false;
 }
