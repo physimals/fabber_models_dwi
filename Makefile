@@ -25,5 +25,5 @@ libfsl-fabbermodels_dwi.so : ${OBJS}
 	${CXX} ${CXXFLAGS} -shared -o $@ $^ ${LDFLAGS}
 
 # fabber built from the FSL fabbercore library including the models specifieid in this project
-fabber_dwi : fabber_client.o libfsl-fabbermodels_dwi.so
+fabber_dwi : fabber_client.o | libfsl-fabbermodels_dwi.so
 	${CXX} ${CXXFLAGS} -o $@ $< -lfsl-fabbermodels_dwi ${LDFLAGS}
