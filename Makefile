@@ -20,9 +20,9 @@ else
   endif
   USRINCFLAGS = -I${INC_NEWMAT} -I${INC_CPROB} -I${INC_BOOST} -I.. \
                 -I${FSLDIR}/extras/include/armawrap
-  USRLDFLAGS = -L${LIB_NEWMAT} -L${LIB_CPROB} -L../fabber_core \
+  USRLDFLAGS = -L${LIB_NEWMAT} -L${LIB_CPROB} -L../fabber_core  \
                -lfabberexec -lfabbercore -lnewimage -lmiscmaths \
-               -lutils -lprob ${MATLIB} -lNewNifti -lznz -lz -ldl
+               -lutils -lcprob ${MATLIB} -lNewNifti -lznz -lz -ldl
 endif
 
 
