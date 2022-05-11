@@ -1,25 +1,30 @@
 include ${FSLCONFDIR}/default.mk
 
 PROJNAME = fabber_dwi
+XFILES   = fabber_dwi
+SOFILES  = libfsl-fabbermodels_dwi.so
+AFILES   = libfabbermodels_dwi.a
 
-USRINCFLAGS = -I${INC_NEWMAT} -I${INC_PROB} -I${INC_CPROB} -I${INC_BOOST} -I..
-USRLDFLAGS = -L${LIB_NEWMAT} -L${LIB_PROB} -L../fabber_core
 
-FSLVERSION= $(shell cat ${FSLDIR}/etc/fslversion | head -c 1)
-ifeq ($(FSLVERSION), 5) 
-  NIFTILIB = -lfslio -lniftiio 
-  MATLIB = -lnewmat
-else 
-  UNAME := $(shell uname -s)
-  ifeq ($(UNAME), Linux)
-    MATLIB = -lopenblas
+# The FSL build system changed
+# substantially in FSL 6.0.6
+# FSL >= 6.0.6
+ifeq (${FSL_GE_606}, true)
+  LIBS = -lfsl-fabberexec -lfsl-fabbercore -lfsl-newimage \
+         -lfsl-miscmaths -lfsl-utils -lfsl-cprob \
+         -lfsl-NewNifti -lfsl-znz -ldl
+# FSL <= 6.0.5
+else
+  ifeq ($(shell uname -s), Linux)
+    MATLIB := -lopenblas
   endif
-  NIFTILIB = -lNewNifti
+  USRINCFLAGS = -I${INC_NEWMAT} -I${INC_CPROB} -I${INC_BOOST} -I.. \
+                -I${FSLDIR}/extras/include/armawrap
+  USRLDFLAGS = -L${LIB_NEWMAT} -L${LIB_CPROB} -L../fabber_core  \
+               -lfabberexec -lfabbercore -lnewimage -lmiscmaths \
+               -lutils -lcprob ${MATLIB} -lNewNifti -lznz -lz -ldl
 endif
 
-LIBS = -lnewimage -lmiscmaths -lutils -lprob ${MATLIB} ${NIFTILIB} -lznz -lz -ldl
-
-XFILES = fabber_dwi
 
 # Forward models
 OBJS =  fwdmodel_dwi.o fwdmodel_dwi_IVIM.o
@@ -28,18 +33,33 @@ OBJS =  fwdmodel_dwi.o fwdmodel_dwi_IVIM.o
 #OPTFLAGS = -ggdb
 
 # Pass Git revision details
-GIT_SHA1:=$(shell git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty)
-GIT_DATE:=$(shell git log -1 --format=%ad --date=local)
+GIT_SHA1 := $(shell git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty)
+GIT_DATE := $(shell git log -1 --format=%ad --date=local)
 CXXFLAGS += -DGIT_SHA1=\"${GIT_SHA1}\" -DGIT_DATE="\"${GIT_DATE}\""
 
-all:	${XFILES} libfabbermodels_dwi.a
+# FSL >=606 uses dynamic linking
+ifeq (${FSL_GE_606}, true)
+
+all: ${XFILES} ${SOFILES}
 
 # models in a library
-libfabbermodels_dwi.a : ${OBJS}
-	${AR} -r $@ ${OBJS}
+libfsl-fabbermodels_dwi.so : ${OBJS}
+	${CXX} ${CXXFLAGS} -shared -o $@ $^ ${LDFLAGS}
 
 # fabber built from the FSL fabbercore library including the models specifieid in this project
-fabber_dwi : fabber_client.o ${OBJS}
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ $< ${OBJS} -lfabbercore -lfabberexec ${LIBS}
+fabber_dwi : fabber_client.o | libfsl-fabbermodels_dwi.so
+	${CXX} ${CXXFLAGS} -o $@ $< -lfsl-fabbermodels_dwi ${LDFLAGS}
 
-# DO NOT DELETE
+
+# FSL <=605 uses static linking
+else
+
+all: ${XFILES} ${AFILES}
+
+libfabbermodels_dwi.a : ${OBJS}
+	${AR} -r $@ $^
+
+fabber_dwi : fabber_client.o ${OBJS}
+	${CXX} ${CXXFLAGS} -o $@ $^  ${LDFLAGS}
+
+endif
